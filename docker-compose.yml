@@ -5,5 +5,7 @@ services:
     restart: always
     ports:
       - "3002:3000"
+    volumes:
+      - ./config.json:/usr/src/app/config.json
     labels:
       com.centurylinklabs.watchtower.enable: false
