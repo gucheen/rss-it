@@ -1,0 +1,20 @@
+{
+  "entris": [
+    {
+      "id": "nikon_downloader_center",
+      "url": "https://downloadcenter.nikonimglib.com/en/update/index/2024.html",
+      "image": "https://downloadcenter.nikonimglib.com/common2/img/mod-header/logo_01.svg",
+      "selectors": {
+        "title": "title",
+        "copyright": "#ex-copyright",
+        "item": ".newsContainer li",
+        "itemLink": "a",
+        "itemDate": ".date",
+        "itemTitle": "p"
+      },
+      "format": {
+        "itemDate": "YYYY-MM-DD"
+      }
+    }
+  ]
+}

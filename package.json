@@ -1,0 +1,19 @@
+{
+  "name": "@gucheen/rss-it",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.13",
+    "feed": "^4.2.2",
+    "node-html-parser": "^7.0.1"
+  }
+}

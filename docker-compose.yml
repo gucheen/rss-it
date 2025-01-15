@@ -1,0 +1,9 @@
+services:
+  rss-it:
+    image: gucheen/rss-it:latest
+    container_name: rss-it
+    restart: always
+    ports:
+      - "3002:3000"
+    labels:
+      com.centurylinklabs.watchtower.enable: false
