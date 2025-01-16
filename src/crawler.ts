@@ -5,7 +5,6 @@ import type { Item } from 'feed'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import appConfig from '../config.json'
-import { CacheHub } from './cache'
 
 dayjs.extend(customParseFormat)
 
@@ -31,8 +30,6 @@ interface RSSEntryConfig {
   }
 }
 
-const cacheHub = new CacheHub()
-
 function getContentFromSelectorPattern(selectorPattern: SelectorPattern, parent: HTMLElement): string {
   if (Array.isArray(selectorPattern)) {
     return selectorPattern.map(selector => parent.querySelector(selector)?.textContent || '').filter(text => text.trim().length > 0).join(' | ')
@@ -45,11 +42,6 @@ function getContentFromSelectorPattern(selectorPattern: SelectorPattern, parent:
 export async function getEntryFeed(id: string) {
   const config = appConfig.entris.find(entry => entry.id === id) as unknown as RSSEntryConfig
   if (config) {
-    const cacheContent = cacheHub.getCache(id)
-    if (cacheContent) {
-      return cacheContent
-    }
-    
     const response = await fetch(config.url)
 
     const html = await response.text()
@@ -117,13 +109,9 @@ export async function getEntryFeed(id: string) {
       }
     })
 
-    const rss2Content = feed.rss2()
-
     console.log(dayjs().format('YYYY-MM-DD HH:mm:ss:'), `Update ${id}'s feed content`)
 
-    cacheHub.addCache(config.id, rss2Content)
-
-    return rss2Content
+    return feed.rss2()
   }
   return ''
 }
