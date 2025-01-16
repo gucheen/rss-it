@@ -1,3 +1,4 @@
+import path from 'path'
 import { CacheHub } from './cache'
 import { getEntryFeed } from './crawler'
 
@@ -29,9 +30,7 @@ const server = Bun.serve({
         status: 500,
       })
     }
-    return new Response('Please provide RSS entry\'s id', {
-      status: 400,
-    })
+    return new Response(Bun.file(path.resolve(__dirname, '../public/index.html')))
   },
 })
 
