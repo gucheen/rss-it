@@ -92,6 +92,8 @@ async function getEntryFeed(id: string) {
 
     const rss2Content = feed.rss2()
 
+    console.log(dayjs().format('YYYY-MM-DD HH:mm:ss:'), `Update ${id}'s feed content`)
+
     cacheHub.addCache(config.id, rss2Content)
 
     return rss2Content
@@ -99,14 +101,18 @@ async function getEntryFeed(id: string) {
   return ''
 }
 
-Bun.serve({
+const server = Bun.serve({
   async fetch(req) {
     const reqURL = new URL(req.url)
     const id = reqURL.searchParams.get('id')
     if (id) {
       const feed = await getEntryFeed(id)
       if (feed) {
-        return new Response(feed)
+        return new Response(feed, {
+          headers: {
+            'Content-type': 'text/xml;charset=UTF-8',
+          },
+        })
       }
       return new Response('RSS entry error', {
         status: 500,
@@ -117,3 +123,5 @@ Bun.serve({
     })
   },
 })
+
+console.log('Bun server up, listened on :' + server.port)
