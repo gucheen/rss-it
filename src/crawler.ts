@@ -102,7 +102,7 @@ export async function getEntryFeed(id: string) {
     .filter(item => item.id)
     .toSorted((a, b) => b.date.getTime() - a.date.getTime())
 
-    allItems.forEach((itemOption, index) => {
+    allItems.forEach((itemOption) => {
       feed.addItem(itemOption)
     })
 
