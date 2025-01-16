@@ -42,7 +42,11 @@ function getContentFromSelectorPattern(selectorPattern: SelectorPattern, parent:
 export async function getEntryFeed(id: string) {
   const config = appConfig.entris.find(entry => entry.id === id) as unknown as RSSEntryConfig
   if (config) {
-    const response = await fetch(config.url)
+    const response = await fetch(config.url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+      },
+    })
 
     const html = await response.text()
 
