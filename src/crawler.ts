@@ -104,10 +104,9 @@ export async function getEntryFeed(id: string) {
 
     allItems.forEach((itemOption, index) => {
       feed.addItem(itemOption)
-      if (index === 0) {
-        feed.options.updated = itemOption.date
-      }
     })
+
+    feed.options.updated = allItems[0].date
 
     console.log(dayjs().format('YYYY-MM-DD HH:mm:ss:'), `Update ${id}'s feed content`)
 
