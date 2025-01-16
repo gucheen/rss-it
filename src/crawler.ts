@@ -79,38 +79,42 @@ export async function getEntryFeed(id: string) {
       feed.options.image = config.image
     }
 
-    const allItems = allNewsEls.map((newsEl) => {
-      const href = (newsEl.querySelector('a') as unknown as HTMLAnchorElement)?.getAttribute('href') || ''
-      let link = ''
-      if (href) {
-        link = href.startsWith('http') ? href : new URL(href, config.url).toString()
+    if (allNewsEls.length > 0) {
+      const allItems = allNewsEls.map((newsEl) => {
+        const href = (newsEl.querySelector('a') as unknown as HTMLAnchorElement)?.getAttribute('href') || ''
+        let link = ''
+        if (href) {
+          link = href.startsWith('http') ? href : new URL(href, config.url).toString()
+        }
+        const dateStr = newsEl.querySelector(config.selectors.itemDate)?.textContent
+        let date
+        if (typeof dateStr === 'string' && dateStr.length > 0) {
+          date = dayjs(dateStr, config.format?.itemDate).toDate()
+        } else {
+          date = new Date()
+        }
+        const itemOption: Item = {
+          title: getContentFromSelectorPattern(config.selectors.itemTitle, newsEl),
+          id: config.selectors.itemId ? getContentFromSelectorPattern(config.selectors.itemId, newsEl) : link,
+          link: link,
+          date,
+        }
+        if (config.selectors.itemDescription) {
+          itemOption.description = getContentFromSelectorPattern(config.selectors.itemDescription, newsEl)
+        }
+        return itemOption
+      })
+      .filter(item => item.id)
+      .toSorted((a, b) => b.date.getTime() - a.date.getTime())
+  
+      if (allItems.length > 0) {
+        allItems.forEach((itemOption) => {
+          feed.addItem(itemOption)
+        })
+    
+        feed.options.updated = allItems[0].date
       }
-      const dateStr = newsEl.querySelector(config.selectors.itemDate)?.textContent
-      let date
-      if (typeof dateStr === 'string' && dateStr.length > 0) {
-        date = dayjs(dateStr, config.format?.itemDate).toDate()
-      } else {
-        date = new Date()
-      }
-      const itemOption: Item = {
-        title: getContentFromSelectorPattern(config.selectors.itemTitle, newsEl),
-        id: config.selectors.itemId ? getContentFromSelectorPattern(config.selectors.itemId, newsEl) : link,
-        link: link,
-        date,
-      }
-      if (config.selectors.itemDescription) {
-        itemOption.description = getContentFromSelectorPattern(config.selectors.itemDescription, newsEl)
-      }
-      return itemOption
-    })
-    .filter(item => item.id)
-    .toSorted((a, b) => b.date.getTime() - a.date.getTime())
-
-    allItems.forEach((itemOption) => {
-      feed.addItem(itemOption)
-    })
-
-    feed.options.updated = allItems[0].date
+    }
 
     console.log(dayjs().format('YYYY-MM-DD HH:mm:ss:'), `Update ${id}'s feed content`)
 
