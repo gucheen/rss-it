@@ -59,7 +59,10 @@ function genFeedItemOptionsFromElements(elements: HTMLElement[], config: RSSEntr
       date,
     }
     if (config.selectors.itemId) {
-      itemOption.id = encodeURIComponent(getTextBySelectorPatternFromParent(config.selectors.itemId, element))
+      const id = encodeURIComponent(getTextBySelectorPatternFromParent(config.selectors.itemId, element))
+      const linkURL = new URL(href, config.url)
+      linkURL.searchParams.append('rss_it_guid', id)
+      itemOption.id = linkURL.toString()
     }
     if (config.selectors.itemDescription) {
       itemOption.description = getTextBySelectorPatternFromParent(config.selectors.itemDescription, element)
