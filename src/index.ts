@@ -30,7 +30,9 @@ const server = Bun.serve({
         status: 500,
       })
     }
-    return new Response(Bun.file(path.resolve(__dirname, '../public/index.html')))
+    return new Response(
+      Bun.file(path.resolve(__dirname, '../public/index.html')),
+    )
   },
 })
 

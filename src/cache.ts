@@ -8,8 +8,8 @@ export class CacheHub {
     this.hub.set(id, content)
     this.state.set(id, { lastUpdate: Date.now() })
   }
-  
-  getCache(id: string): string|null {
+
+  getCache(id: string): string | null {
     const cacheState = this.state.get(id)
     if (cacheState && cacheState.lastUpdate) {
       const cacheInToday = dayjs(cacheState.lastUpdate).isSame(dayjs(), 'day')
