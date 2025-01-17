@@ -1,14 +1,14 @@
-import { parse } from 'node-html-parser'
-import type { HTMLElement } from 'node-html-parser'
+import { parse, type HTMLElement } from 'node-html-parser'
 import { Feed } from 'feed'
 import type { Item } from 'feed'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import appConfig from '../config.json'
+import { htmlElementGroupToFragment } from './utils'
 
 dayjs.extend(customParseFormat)
 
-type SelectorPattern = string|string[]
+type SelectorPattern = string | string[]
 
 interface RSSEntryConfig {
   id: string
@@ -30,13 +30,44 @@ interface RSSEntryConfig {
   }
 }
 
-function getContentFromSelectorPattern(selectorPattern: SelectorPattern, parent: HTMLElement): string {
+function getTextBySelectorPatternFromParent(selectorPattern: SelectorPattern, parent: HTMLElement): string {
   if (Array.isArray(selectorPattern)) {
-    return selectorPattern.map(selector => parent.querySelector(selector)?.textContent || '').filter(text => text.trim().length > 0).join(' | ')
+    return selectorPattern.map(selector => parent.querySelectorAll(selector)).flat().map(item => item?.textContent || '').filter(text => text.trim().length > 0).join(' | ')
   } else if (typeof selectorPattern === 'string') {
-    return parent.querySelector(selectorPattern)?.textContent || ''
+    return parent.querySelectorAll(selectorPattern).map(item => item?.textContent || '').filter(text => text).join(' | ')
   }
   return ''
+}
+
+function genFeedItemOptionsFromElements(elements: HTMLElement[], config: RSSEntryConfig): Item[] {
+  const allItems = elements.map((element) => {
+    const href = (element.querySelector('a') as unknown as HTMLAnchorElement)?.getAttribute('href') || ''
+    let link = ''
+    if (href) {
+      link = href.startsWith('http') ? href : new URL(href, config.url).toString()
+    }
+    const dateStr = element.querySelector(config.selectors.itemDate)?.textContent
+    let date
+    if (typeof dateStr === 'string' && dateStr.length > 0) {
+      date = dayjs(dateStr, config.format?.itemDate).toDate()
+    } else {
+      date = new Date()
+    }
+    const itemOption: Item = {
+      title: getTextBySelectorPatternFromParent(config.selectors.itemTitle, element),
+      id: config.selectors.itemId ? getTextBySelectorPatternFromParent(config.selectors.itemId, element) : link,
+      link: link,
+      date,
+    }
+    if (config.selectors.itemDescription) {
+      itemOption.description = getTextBySelectorPatternFromParent(config.selectors.itemDescription, element)
+    }
+    return itemOption
+  })
+    .filter(item => item.id)
+    .toSorted((a, b) => b.date.getTime() - a.date.getTime())
+
+  return allItems
 }
 
 export async function getEntryFeed(id: string) {
@@ -52,17 +83,15 @@ export async function getEntryFeed(id: string) {
 
     const page = parse(html)
 
-    const allNewsEls = page.querySelectorAll(config.selectors.item)
-
     let title = ''
     if (config.title) {
       title = config.title
     } else if (config.selectors.title) {
-      title = page.querySelector(config.selectors.title)?.textContent || ''
+      title = getTextBySelectorPatternFromParent(config.selectors.title, page)
     }
     let copyright = ''
     if (config.selectors.copyright) {
-      copyright = page.querySelector(config.selectors.copyright)?.textContent || ''
+      copyright = getTextBySelectorPatternFromParent(config.selectors.copyright, page)
     }
 
     const feed = new Feed({
@@ -79,41 +108,23 @@ export async function getEntryFeed(id: string) {
       feed.options.image = config.image
     }
 
-    if (allNewsEls.length > 0) {
-      const allItems = allNewsEls.map((newsEl) => {
-        const href = (newsEl.querySelector('a') as unknown as HTMLAnchorElement)?.getAttribute('href') || ''
-        let link = ''
-        if (href) {
-          link = href.startsWith('http') ? href : new URL(href, config.url).toString()
-        }
-        const dateStr = newsEl.querySelector(config.selectors.itemDate)?.textContent
-        let date
-        if (typeof dateStr === 'string' && dateStr.length > 0) {
-          date = dayjs(dateStr, config.format?.itemDate).toDate()
-        } else {
-          date = new Date()
-        }
-        const itemOption: Item = {
-          title: getContentFromSelectorPattern(config.selectors.itemTitle, newsEl),
-          id: config.selectors.itemId ? getContentFromSelectorPattern(config.selectors.itemId, newsEl) : link,
-          link: link,
-          date,
-        }
-        if (config.selectors.itemDescription) {
-          itemOption.description = getContentFromSelectorPattern(config.selectors.itemDescription, newsEl)
-        }
-        return itemOption
+    const allNewsEls = page.querySelectorAll(config.selectors.item)
+
+    let allItems
+
+    if (config.selectors.item.includes(',')) {
+      const selectorGroupSize = config.selectors.item.split(',').length
+      allItems = genFeedItemOptionsFromElements(htmlElementGroupToFragment(allNewsEls, selectorGroupSize), config)
+    } else {
+      allItems = genFeedItemOptionsFromElements(allNewsEls, config)
+    }
+
+    if (allItems.length > 0) {
+      allItems.forEach((itemOption) => {
+        feed.addItem(itemOption)
       })
-      .filter(item => item.id)
-      .toSorted((a, b) => b.date.getTime() - a.date.getTime())
-  
-      if (allItems.length > 0) {
-        allItems.forEach((itemOption) => {
-          feed.addItem(itemOption)
-        })
-    
-        feed.options.updated = allItems[0].date
-      }
+
+      feed.options.updated = allItems[0].date
     }
 
     console.log(dayjs().format('YYYY-MM-DD HH:mm:ss:'), `Update ${id}'s feed content`)
