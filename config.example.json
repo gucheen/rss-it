@@ -24,8 +24,24 @@
         "copyright": ".footer-bottom-content-copy",
         "item": ".rt_bn_mount_list_di_3",
         "itemDate": ".rt_cf_plm_last_updated",
-        "itemTitle": [".rt_cf_p_title", ".rt_cf_pb_model_name", ".rt_cf_plm_mount_name", ".rt_cf_plm_newest_version", ".rt_cf_plm_last_updated"],
-        "itemId": [".rt_cf_pb_model_name", ".rt_cf_plm_mount_name", ".rt_cf_plm_newest_version"]
+        "itemTitle": ".rt_cf_p_title, .rt_cf_pb_model_name, .rt_cf_plm_mount_name, .rt_cf_plm_newest_version, .rt_cf_plm_last_updated",
+        "itemId": ".rt_cf_pb_model_name, .rt_cf_plm_mount_name, .rt_cf_plm_newest_version"
+      },
+      "format": {
+        "itemDate": "YYYY.MM.DD"
+      }
+    },
+    {
+      "id": "ricoh_griii_firmware",
+      "title": "Ricoh GR III firmware updates",
+      "url": "https://www.ricoh-imaging.co.jp/english/products/gr-3/firmup/",
+      "image": "https://www.ricoh-imaging.co.jp/common/img/header-logo2-sp_en.jpg",
+      "selectors": {
+        "copyright": "#rim-tpl-copyright",
+        "item": ".news dt, .news dd",
+        "itemDate": "dt",
+        "itemTitle": "dd",
+        "itemId": "dd"
       },
       "format": {
         "itemDate": "YYYY.MM.DD"
