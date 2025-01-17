@@ -24,7 +24,8 @@
         "copyright": ".footer-bottom-content-copy",
         "item": ".rt_bn_mount_list_di_3",
         "itemDate": ".rt_cf_plm_last_updated",
-        "itemTitle": ".rt_cf_p_title, .rt_cf_pb_model_name, .rt_cf_plm_mount_name, .rt_cf_plm_newest_version, .rt_cf_plm_last_updated"
+        "itemTitle": ".rt_cf_p_title, .rt_cf_pb_model_name, .rt_cf_plm_mount_name, .rt_cf_plm_newest_version, .rt_cf_plm_last_updated",
+        "itemId": ".rt_cf_pb_model_name, .rt_cf_plm_mount_name, .rt_cf_plm_newest_version"
       },
       "format": {
         "itemDate": "YYYY.MM.DD"
@@ -39,7 +40,8 @@
         "copyright": "#rim-tpl-copyright",
         "item": ".news dt, .news dd",
         "itemDate": "dt",
-        "itemTitle": "dd"
+        "itemTitle": "dd",
+        "itemId": "dd"
       },
       "format": {
         "itemDate": "YYYY.MM.DD"
