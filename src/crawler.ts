@@ -55,9 +55,11 @@ function genFeedItemOptionsFromElements(elements: HTMLElement[], config: RSSEntr
     }
     const itemOption: Item = {
       title: getTextBySelectorPatternFromParent(config.selectors.itemTitle, element),
-      id: config.selectors.itemId ? getTextBySelectorPatternFromParent(config.selectors.itemId, element) : link,
-      link: link,
+      link,
       date,
+    }
+    if (config.selectors.itemId) {
+      itemOption.id = encodeURIComponent(getTextBySelectorPatternFromParent(config.selectors.itemId, element))
     }
     if (config.selectors.itemDescription) {
       itemOption.description = getTextBySelectorPatternFromParent(config.selectors.itemDescription, element)
