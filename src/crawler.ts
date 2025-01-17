@@ -59,7 +59,9 @@ function genFeedItemOptionsFromElements(
     .map((element) => {
       const href =
         (
-          element.querySelector('a') as unknown as HTMLAnchorElement
+          element.querySelector(
+            config.selectors.itemLink ?? 'a',
+          ) as unknown as HTMLAnchorElement
         )?.getAttribute('href') || ''
       let link = ''
       if (href) {
