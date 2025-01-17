@@ -46,6 +46,22 @@
       "format": {
         "itemDate": "YYYY.MM.DD"
       }
+    },
+    {
+      "id": "rss_it_homepage",
+      "title": "RSS it Homepage",
+      "url": "https://rss-it.guchengf.me/",
+      "selectors": {
+        "copyright": "footer > small",
+        "item": ".entries table tbody tr",
+        "itemDate": "td:nth-child(4)",
+        "itemTitle": "th:nth-child(1)",
+        "itemId": "td:nth-child(4)",
+        "itemDescription": "td"
+      },
+      "format": {
+        "itemDate": "YYYY-MM-DD HH:mm:ss"
+      }
     }
   ]
 }
