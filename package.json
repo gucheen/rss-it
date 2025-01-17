@@ -4,10 +4,12 @@
   "type": "module",
   "scripts": {
     "start": "bun src/index.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "format": "prettier . --write"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "prettier": "^3.4.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
