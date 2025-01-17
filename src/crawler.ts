@@ -66,7 +66,7 @@ function genFeedItemOptionsFromElements(elements: HTMLElement[], config: RSSEntr
     }
     return itemOption
   })
-    .filter(item => item.id)
+    .filter(item => item.title)
     .toSorted((a, b) => b.date.getTime() - a.date.getTime())
 
   return allItems
