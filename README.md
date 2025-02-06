@@ -1,4 +1,8 @@
-# rss-it
+# RSS-it
+
+RSS-it is a simple RSS generator from static pages. Mainly used for static web pages that do not provide update subscriptions.
+
+## Development
 
 To install dependencies:
 
