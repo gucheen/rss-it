@@ -3,8 +3,16 @@ import { Feed } from 'feed'
 import type { Item } from 'feed'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
-import appConfig from '../config.json'
 import { htmlElementGroupToFragment } from './utils'
+
+const appConfigFile = Bun.file('config.json')
+
+if (!(await appConfigFile.exists())) {
+  console.error('please create config.json!')
+  process.exit(1)
+}
+
+const appConfig = await appConfigFile.json()
 
 dayjs.extend(customParseFormat)
 
