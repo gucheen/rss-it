@@ -118,7 +118,7 @@ function genFeedItemOptionsFromElements(
 
 export async function getEntryFeed(id: string) {
   const config = appConfig.entris.find(
-    (entry) => entry.id === id,
+    (entry: RSSEntryConfig) => entry.id === id,
   ) as unknown as RSSEntryConfig
   if (config) {
     const response = await fetch(config.url, {
