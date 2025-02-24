@@ -21,8 +21,6 @@ bun src/index.ts
 
 ## config.json Configuration
 
-1. 配置结构：
-
 ```json
 {
   "id": "Unique identifier",
