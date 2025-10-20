@@ -1,0 +1,39 @@
+name: Build and Push Docker Image
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract repository/service name
+        id: extract-name
+        run: echo "REPO_NAME=$(basename $GITHUB_REPOSITORY)" >> $GITHUB_ENV
+      
+      - name: Extract current version from package.json
+        id: get-version
+        run: |
+          version=$(node -p "require('./package.json').version.replace('-snapshot', '')")
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          file: Dockerfile
+          push: true
+          tags: ${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:${{ env.VERSION }}
