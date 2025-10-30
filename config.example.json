@@ -38,7 +38,7 @@
       "image": "https://www.ricoh-imaging.co.jp/common/img/header-logo2-sp_en.jpg",
       "selectors": {
         "copyright": "#rim-tpl-copyright",
-        "item": ".news dt, .news dd",
+        "item": ".news dt",
         "itemDate": "dt",
         "itemTitle": "dd",
         "itemId": "dd"
@@ -61,6 +61,35 @@
       },
       "format": {
         "itemDate": "YYYY-MM-DD HH:mm:ss"
+      }
+    },
+    {
+      "id": "viltrox_16mm_f18z_firmware",
+      "title": "Viltrox AF 16mm F1.8 Z Lens Firmware",
+      "url": "https://viltrox.com/pages/16mm-f1-8-z",
+      "selectors": {
+        "item": ".download-list-items",
+        "itemDate": ".download-list-item-date",
+        "itemTitle": ".download-list-item-title",
+        "itemId": ".download-list-item-title"
+      },
+      "format": {
+        "itemDate": "YYYY-MM-DD"
+      }
+    },
+    {
+      "id": "sirui_aurora_firmware_updates",
+      "title": "Sirui Aurora Firmware Update Announcement",
+      "url": "https://www.sirui.com/announcementList?type=aurora",
+      "selectors": {
+        "item": ".anno-content-list-box",
+        "itemDate": ".anno-content-list-box-date",
+        "itemTitle": ".anno-content-list-box-date-vo",
+        "itemId": ".anno-content-list-box-date-vo",
+        "itemDescription": ".anno-content-list-box-txt"
+      },
+      "format": {
+        "itemDate": "YYYY.MM.DD"
       }
     }
   ]
