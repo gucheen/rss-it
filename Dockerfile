@@ -17,7 +17,7 @@ FROM base AS release
 COPY --from=install /temp/prod/node_modules node_modules
 COPY src src
 COPY package.json .
-COPY public .
+COPY public public
 
 # run the app
 USER bun
