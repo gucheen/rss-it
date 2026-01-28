@@ -1,4 +1,5 @@
-import path from 'path'
+import { file } from 'bun'
+import index from '../public/index.html' with { type: 'file' }
 import { CacheHub } from './cache'
 import { getEntryFeed } from './crawler'
 
@@ -30,10 +31,12 @@ const server = Bun.serve({
         status: 500,
       })
     }
-    return new Response(
-      Bun.file(path.resolve(__dirname, '../public/index.html')),
-    )
+    return new Response(file(index), {
+      headers: {
+        'Content-type': 'text/html;charset=UTF-8',
+      },
+    })
   },
 })
 
-console.log('Bun server up, listened on :' + server.port)
+console.log(`rss-it is up, listened on ${server.url}`)
