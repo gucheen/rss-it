@@ -38,7 +38,7 @@
       "image": "https://www.ricoh-imaging.co.jp/common/img/header-logo2-sp_en.jpg",
       "selectors": {
         "copyright": "#rim-tpl-copyright",
-        "item": ".news dt",
+        "item": ".news dt, .news dd",
         "itemDate": "dt",
         "itemTitle": "dd",
         "itemId": "dd"
@@ -68,8 +68,8 @@
       "title": "Viltrox AF 16mm F1.8 Z Lens Firmware",
       "url": "https://viltrox.com/pages/16mm-f1-8-z",
       "selectors": {
-        "item": ".download-list-items",
-        "itemDate": ".download-list-item-date",
+        "item": ".download-list-items,.download-list-items2",
+        "itemDate": ".version-notes-date",
         "itemTitle": ".download-list-item-title",
         "itemId": ".download-list-item-title"
       },
@@ -84,8 +84,8 @@
       "selectors": {
         "item": ".anno-content-list-box",
         "itemDate": ".anno-content-list-box-date",
-        "itemTitle": ".anno-content-list-box-date-vo",
-        "itemId": ".anno-content-list-box-date-vo",
+        "itemTitle": ".anno-content-list-box-title",
+        "itemId": ".anno-content-list-box-title",
         "itemDescription": ".anno-content-list-box-txt"
       },
       "format": {
