@@ -68,13 +68,13 @@
       "title": "Viltrox AF 16mm F1.8 Z Lens Firmware",
       "url": "https://viltrox.com/pages/16mm-f1-8-z",
       "selectors": {
-        "item": ".download-list-items,.download-list-items2",
+        "item": ".download-list-items:first-child,.download-list-items2:nth-child(2)",
         "itemDate": ".version-notes-date",
         "itemTitle": ".download-list-item-title",
         "itemId": ".download-list-item-title"
       },
       "format": {
-        "itemDate": "YYYY-MM-DD"
+        "itemDate": "YYYY-M-DD"
       }
     },
     {
