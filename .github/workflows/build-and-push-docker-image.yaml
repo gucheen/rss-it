@@ -4,23 +4,26 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.1
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun test
 
-      - name: Extract repository/service name
-        id: extract-name
-        run: echo "REPO_NAME=$(basename $GITHUB_REPOSITORY)" >> $GITHUB_ENV
-      
-      - name: Extract current version from package.json
-        id: get-version
-        run: |
-          version=$(node -p "require('./package.json').version.replace('-snapshot', '')")
-          echo "VERSION=$version" >> $GITHUB_ENV
+  build:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3
@@ -28,12 +31,27 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Build and Push Docker image
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+          flavor: |
+            latest=auto
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
+          context: .
           file: Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:${{ env.VERSION }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

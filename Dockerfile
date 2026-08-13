@@ -1,6 +1,5 @@
-# use the official Bun image
-# see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:1-alpine AS base
+# Keep the build runtime aligned with CI for reproducible compiled output.
+FROM oven/bun:1.3.1-alpine AS base
 WORKDIR /usr/src/app
 
 FROM base AS builder
@@ -13,4 +12,6 @@ COPY --from=builder /temp/dev/rss-it .
 
 USER bun
 EXPOSE 3000/tcp
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:3000/healthz || exit 1
 ENTRYPOINT [ "./rss-it" ]

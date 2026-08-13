@@ -5,11 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RSS it</title>
     <meta name="description" content="RSS those don't have RSS." />
-    <link rel="alternate" type="application/rss+xml" title="RSS for RSS-it" href="https://rss-it.guchengf.me?id=rss_it_homepage" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="RSS for RSS-it"
+      href="/?id=rss_it_homepage"
+    />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.min.css"
     />
+    <style>
+      td {
+        word-break: break-word;
+      }
+    </style>
   </head>
 
   <body>
@@ -21,92 +31,19 @@
     </header>
     <main class="container">
       <section class="entries">
-        <h2>Current RSS Entires</h2>
+        <h2>Current RSS Entries</h2>
         <table class="striped">
           <thead>
             <tr>
               <th scope="col">Name</th>
               <th scope="col">Website</th>
               <th scope="col">Feed Link</th>
-              <th scope="col">Updated At</th>
+              <th scope="col">Rule Updated</th>
+              <th scope="col">Latest Content</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <th scope="row">Nikon Download Center</th>
-              <td>
-                <a
-                  href="https://downloadcenter.nikonimglib.com/en/update/index/2026.html"
-                  >https://downloadcenter.nikonimglib.com/en/update/index/2026.html</a
-                >
-              </td>
-              <td>
-                <a href="https://rss-it.guchengf.me?id=nikon_downloader_center"
-                  >https://rss-it.guchengf.me?id=nikon_downloader_center</a
-                >
-              </td>
-              <td>2026-01-04 10:41:31</td>
-            </tr>
-            <tr>
-              <th scope="row">TAMRON Lens Firmware</th>
-              <td>
-                <a
-                  href="https://www.tamron.com/global/consumer/support/download/firmware/"
-                  >https://www.tamron.com/global/consumer/support/download/firmware/</a
-                >
-              </td>
-              <td>
-                <a href="https://rss-it.guchengf.me?id=tamron_lens_firmware"
-                  >https://rss-it.guchengf.me?id=tamron_lens_firmware</a
-                >
-              </td>
-              <td>2025-01-17 15:30:31</td>
-            </tr>
-            <tr>
-              <th scope="row">Ricoh GR III Firmware</th>
-              <td>
-                <a
-                  href="https://www.ricoh-imaging.co.jp/english/products/gr-3/firmup/"
-                  >https://www.ricoh-imaging.co.jp/english/products/gr-3/firmup/</a
-                >
-              </td>
-              <td>
-                <a href="https://rss-it.guchengf.me?id=ricoh_griii_firmware"
-                  >https://rss-it.guchengf.me?id=ricoh_griii_firmware</a
-                >
-              </td>
-              <td>2025-01-17 15:30:31</td>
-            </tr>
-            <tr>
-              <th scope="row">Viltrox AF 16mm F1.8 Z Lens Firmware</th>
-              <td>
-                <a href="https://viltrox.com/pages/16mm-f1-8-z"
-                  >https://viltrox.com/pages/16mm-f1-8-z</a
-                >
-              </td>
-              <td>
-                <a
-                  href="https://rss-it.guchengf.me?id=viltrox_16mm_f18z_firmware"
-                  >https://rss-it.guchengf.me?id=viltrox_16mm_f18z_firmware</a
-                >
-              </td>
-              <td>2026-03-31 14:40:44</td>
-            </tr>
-            <tr>
-              <th scope="row">Sirui Aurora Firmware Update Announcement</th>
-              <td>
-                <a href="https://www.sirui.com/announcementList?type=aurora"
-                  >https://www.sirui.com/announcementList?type=aurora</a
-                >
-              </td>
-              <td>
-                <a
-                  href="https://rss-it.guchengf.me?id=sirui_aurora_firmware_updates"
-                  >https://rss-it.guchengf.me?id=sirui_aurora_firmware_updates</a
-                >
-              </td>
-              <td>2025-10-30 16:37:29</td>
-            </tr>
+            <!-- RSS_IT_ENTRY_ROWS -->
           </tbody>
         </table>
       </section>
@@ -119,9 +56,7 @@
       <span
         ><small
           >And of course
-          <a href="https://rss-it.guchengf.me?id=rss_it_homepage"
-            >RSS of RSS-it self</a
-          ></small
+          <a href="/?id=rss_it_homepage">RSS of RSS-it self</a></small
         >.</span
       >
     </footer>

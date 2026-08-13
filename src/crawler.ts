@@ -1,153 +1,152 @@
 import { parse, type HTMLElement } from 'node-html-parser'
-import { Feed } from 'feed'
-import type { Item } from 'feed'
+import { Feed, type Item } from 'feed'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
+import type { FeedContent } from './cache'
+import type { RSSEntryConfig, SelectorPattern } from './config'
 import { htmlElementGroupToFragment } from './utils'
-
-const appConfigFile = Bun.file('config.json')
-
-if (!(await appConfigFile.exists())) {
-  console.error('please create config.json!')
-  process.exit(1)
-}
-
-const appConfig = await appConfigFile.json()
 
 dayjs.extend(customParseFormat)
 
-type SelectorPattern = string | string[]
+const USER_AGENT =
+  'Mozilla/5.0 (compatible; RSS-it/1.0; +https://github.com/gucheen/rss-it)'
 
-interface RSSEntryConfig {
-  id: string
-  url: string
-  title?: string
-  image?: string
-  selectors: {
-    title?: string
-    copyright?: string
-    item: string
-    itemLink?: string
-    itemDate: string
-    itemTitle: SelectorPattern
-    itemDescription?: SelectorPattern
-    itemId?: SelectorPattern
+export class UpstreamFetchError extends Error {
+  constructor(
+    message: string,
+    public readonly status?: number,
+    options?: ErrorOptions,
+  ) {
+    super(message, options)
+    this.name = 'UpstreamFetchError'
   }
-  format?: {
-    itemDate?: string
+}
+
+export class FeedParseError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options)
+    this.name = 'FeedParseError'
   }
+}
+
+export type FetchLike = (
+  input: string | URL | Request,
+  init?: RequestInit,
+) => Promise<Response>
+
+export interface FetchEntryFeedOptions {
+  fetchImpl?: FetchLike
+  timeoutMs?: number
+  maxResponseBytes?: number
 }
 
 function getTextBySelectorPatternFromParent(
   selectorPattern: SelectorPattern,
   parent: HTMLElement,
 ): string {
-  if (Array.isArray(selectorPattern)) {
-    return selectorPattern
-      .map((selector) => parent.querySelectorAll(selector))
-      .flat()
-      .map((item) => item?.textContent || '')
-      .filter((text) => text.trim().length > 0)
-      .join(' | ')
-  } else if (typeof selectorPattern === 'string') {
-    return parent
-      .querySelectorAll(selectorPattern)
-      .map((item) => item?.textContent || '')
-      .filter((text) => text)
-      .join(' | ')
+  const selectors = Array.isArray(selectorPattern)
+    ? selectorPattern
+    : [selectorPattern]
+  return selectors
+    .flatMap((selector) => parent.querySelectorAll(selector))
+    .map((item) => item.textContent.trim())
+    .filter(Boolean)
+    .join(' | ')
+}
+
+function parseItemDate(
+  dateText: string,
+  format: string | undefined,
+): Date | null {
+  const parsed = format
+    ? dayjs(dateText.trim(), format, true)
+    : dayjs(dateText.trim())
+  return parsed.isValid() ? parsed.toDate() : null
+}
+
+function resolveURL(href: string | undefined, baseURL: string): string {
+  if (!href) return baseURL
+  return new URL(href, baseURL).toString()
+}
+
+function createStableID(
+  element: HTMLElement,
+  config: RSSEntryConfig,
+  title: string,
+  link: string,
+): string {
+  const configuredID = config.selectors.itemId
+    ? getTextBySelectorPatternFromParent(config.selectors.itemId, element)
+    : ''
+  if (configuredID) {
+    const idURL = new URL(link || config.url, config.url)
+    idURL.searchParams.set('rss_it_guid', configuredID)
+    return idURL.toString()
   }
-  return ''
+  if (link && link !== config.url) return link
+  return `${config.url}#rss_it_guid=${encodeURIComponent(title)}`
 }
 
 function genFeedItemOptionsFromElements(
   elements: HTMLElement[],
   config: RSSEntryConfig,
 ): Item[] {
-  const allItems = elements
-    .map((element) => {
-      const href =
-        (
-          element.querySelector(
-            config.selectors.itemLink ?? 'a',
-          ) as unknown as HTMLAnchorElement
-        )?.getAttribute('href') || ''
-      let link = ''
-      if (href) {
-        link = href.startsWith('http')
-          ? href
-          : new URL(href, config.url).toString()
-      }
-      const dateStr = element.querySelector(
+  return elements
+    .flatMap((element): Item[] => {
+      const title = getTextBySelectorPatternFromParent(
+        config.selectors.itemTitle,
+        element,
+      )
+      if (!title) return []
+
+      const dateText = element.querySelector(
         config.selectors.itemDate,
       )?.textContent
-      let date
-      if (typeof dateStr === 'string' && dateStr.length > 0) {
-        date = dayjs(dateStr, config.format?.itemDate).toDate()
-      } else {
-        date = new Date()
-      }
-      const itemOption: Item = {
-        title: getTextBySelectorPatternFromParent(
-          config.selectors.itemTitle,
-          element,
-        ),
+      if (!dateText) return []
+      const date = parseItemDate(dateText, config.format?.itemDate)
+      if (!date) return []
+
+      const href = element
+        .querySelector(config.selectors.itemLink ?? 'a')
+        ?.getAttribute('href')
+      const link = resolveURL(href, config.url)
+      const item: Item = {
+        title,
         link,
+        id: createStableID(element, config, title, link),
         date,
       }
-      if (config.selectors.itemId) {
-        const id = encodeURIComponent(
-          getTextBySelectorPatternFromParent(config.selectors.itemId, element),
-        )
-        const linkURL = new URL(href, config.url)
-        linkURL.searchParams.append('rss_it_guid', id)
-        itemOption.id = linkURL.toString()
-      }
+
       if (config.selectors.itemDescription) {
-        itemOption.description = getTextBySelectorPatternFromParent(
+        const description = getTextBySelectorPatternFromParent(
           config.selectors.itemDescription,
           element,
         )
+        if (description) item.description = description
       }
-      return itemOption
+      return [item]
     })
-    .filter((item) => item.title)
     .toSorted((a, b) => b.date.getTime() - a.date.getTime())
-
-  return allItems
 }
 
-export async function getEntryFeed(id: string) {
-  const config = appConfig.entris.find(
-    (entry: RSSEntryConfig) => entry.id === id,
-  ) as unknown as RSSEntryConfig
-  if (config) {
-    const response = await fetch(config.url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
-      },
-    })
-
-    const html = await response.text()
-
+export function buildEntryFeedResult(
+  config: RSSEntryConfig,
+  html: string,
+): FeedContent {
+  try {
     const page = parse(html)
-
-    let title = ''
-    if (config.title) {
-      title = config.title
-    } else if (config.selectors.title) {
-      title = getTextBySelectorPatternFromParent(config.selectors.title, page)
-    }
-    let copyright = ''
-    if (config.selectors.copyright) {
-      copyright = getTextBySelectorPatternFromParent(
-        config.selectors.copyright,
-        page,
-      )
-    }
+    const title =
+      config.title ??
+      (config.selectors.title
+        ? getTextBySelectorPatternFromParent(config.selectors.title, page)
+        : '') ??
+      config.id
+    const copyright = config.selectors.copyright
+      ? getTextBySelectorPatternFromParent(config.selectors.copyright, page)
+      : ''
 
     const feed = new Feed({
-      title,
+      title: title || config.id,
       description: '',
       id: config.url,
       link: config.url,
@@ -155,39 +154,118 @@ export async function getEntryFeed(id: string) {
       favicon: new URL('/favicon.ico', config.url).toString(),
       copyright,
     })
+    if (config.image) feed.options.image = config.image
 
-    if (config.image) {
-      feed.options.image = config.image
-    }
-
-    const allNewsEls = page.querySelectorAll(config.selectors.item)
-
-    let allItems
-
-    if (config.selectors.item.includes(',')) {
-      const selectorGroupSize = config.selectors.item.split(',').length
-      allItems = genFeedItemOptionsFromElements(
-        htmlElementGroupToFragment(allNewsEls, selectorGroupSize),
-        config,
+    const elements = page.querySelectorAll(config.selectors.item)
+    const groupSize =
+      config.selectors.itemGroupSize ??
+      (config.selectors.item.includes(',')
+        ? config.selectors.item.split(',').length
+        : 1)
+    if (groupSize > 1 && elements.length % groupSize !== 0) {
+      throw new FeedParseError(
+        `Entry "${config.id}" matched ${elements.length} elements, which cannot be grouped by ${groupSize}`,
       )
-    } else {
-      allItems = genFeedItemOptionsFromElements(allNewsEls, config)
+    }
+    const itemElements =
+      groupSize > 1 ? htmlElementGroupToFragment(elements, groupSize) : elements
+    const items = genFeedItemOptionsFromElements(itemElements, config)
+    if (items.length === 0) {
+      throw new FeedParseError(
+        `No valid feed items matched entry "${config.id}"`,
+      )
     }
 
-    if (allItems.length > 0) {
-      allItems.forEach((itemOption) => {
-        feed.addItem(itemOption)
-      })
-
-      feed.options.updated = allItems[0].date
+    for (const item of items) feed.addItem(item)
+    feed.options.updated = items[0].date
+    return {
+      content: feed.rss2(),
+      contentUpdatedAt: items[0].date.getTime(),
     }
-
-    console.log(
-      dayjs().format('YYYY-MM-DD HH:mm:ss:'),
-      `Update ${id}'s feed content`,
-    )
-
-    return feed.rss2()
+  } catch (error) {
+    if (error instanceof FeedParseError) throw error
+    throw new FeedParseError(`Failed to parse entry "${config.id}"`, {
+      cause: error,
+    })
   }
-  return ''
+}
+
+export function buildEntryFeed(config: RSSEntryConfig, html: string): string {
+  return buildEntryFeedResult(config, html).content
+}
+
+async function readResponseText(
+  response: Response,
+  maxResponseBytes: number,
+): Promise<string> {
+  const contentLength = Number(response.headers.get('content-length'))
+  if (Number.isFinite(contentLength) && contentLength > maxResponseBytes) {
+    throw new UpstreamFetchError(
+      `Upstream response exceeds ${maxResponseBytes} bytes`,
+      response.status,
+    )
+  }
+  if (!response.body) return ''
+
+  const reader = response.body.getReader()
+  const chunks: Uint8Array[] = []
+  let totalBytes = 0
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    totalBytes += value.byteLength
+    if (totalBytes > maxResponseBytes) {
+      await reader.cancel()
+      throw new UpstreamFetchError(
+        `Upstream response exceeds ${maxResponseBytes} bytes`,
+        response.status,
+      )
+    }
+    chunks.push(value)
+  }
+
+  const body = new Uint8Array(totalBytes)
+  let offset = 0
+  for (const chunk of chunks) {
+    body.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  return new TextDecoder().decode(body)
+}
+
+export async function fetchEntryFeed(
+  config: RSSEntryConfig,
+  options: FetchEntryFeedOptions = {},
+): Promise<string> {
+  return (await fetchEntryFeedResult(config, options)).content
+}
+
+export async function fetchEntryFeedResult(
+  config: RSSEntryConfig,
+  options: FetchEntryFeedOptions = {},
+): Promise<FeedContent> {
+  const fetchImpl = options.fetchImpl ?? fetch
+  const timeoutMs = options.timeoutMs ?? 10_000
+  const maxResponseBytes = options.maxResponseBytes ?? 2 * 1024 * 1024
+
+  let response: Response
+  try {
+    response = await fetchImpl(config.url, {
+      headers: { 'User-Agent': USER_AGENT },
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+  } catch (error) {
+    throw new UpstreamFetchError(`Failed to fetch "${config.id}"`, undefined, {
+      cause: error,
+    })
+  }
+  if (!response.ok) {
+    throw new UpstreamFetchError(
+      `Upstream returned HTTP ${response.status} for "${config.id}"`,
+      response.status,
+    )
+  }
+
+  const html = await readResponseText(response, maxResponseBytes)
+  return buildEntryFeedResult(config, html)
 }

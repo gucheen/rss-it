@@ -1,9 +1,13 @@
 {
-  "entris": [
+  "cacheTtlSeconds": 3600,
+  "fetchTimeoutMs": 10000,
+  "maxResponseBytes": 2097152,
+  "entries": [
     {
       "id": "nikon_downloader_center",
-      "url": "https://downloadcenter.nikonimglib.com/en/update/index/2025.html",
+      "url": "https://downloadcenter.nikonimglib.com/en/update/index/2026.html",
       "image": "https://downloadcenter.nikonimglib.com/common2/img/mod-header/logo_01.svg",
+      "ruleUpdatedAt": "2026-08-13",
       "selectors": {
         "title": "title",
         "copyright": "#ex-copyright",
@@ -20,6 +24,7 @@
       "title": "TAMRON Lens Firmware",
       "url": "https://www.tamron.com/global/consumer/support/download/firmware/",
       "image": "https://www.tamron.com/common/images/logo.svg",
+      "ruleUpdatedAt": "2025-01-17",
       "selectors": {
         "copyright": ".footer-bottom-content-copy",
         "item": ".rt_bn_mount_list_di_3",
@@ -36,9 +41,11 @@
       "title": "Ricoh GR III firmware updates",
       "url": "https://www.ricoh-imaging.co.jp/english/products/gr-3/firmup/",
       "image": "https://www.ricoh-imaging.co.jp/common/img/header-logo2-sp_en.jpg",
+      "ruleUpdatedAt": "2026-08-13",
       "selectors": {
         "copyright": "#rim-tpl-copyright",
         "item": ".news dt, .news dd",
+        "itemGroupSize": 2,
         "itemDate": "dt",
         "itemTitle": "dd",
         "itemId": "dd"
@@ -51,6 +58,7 @@
       "id": "rss_it_homepage",
       "title": "RSS it Homepage",
       "url": "https://rss-it.guchengf.me/",
+      "ruleUpdatedAt": "2026-08-13",
       "selectors": {
         "copyright": "footer > small",
         "item": ".entries table tbody tr",
@@ -60,15 +68,17 @@
         "itemDescription": "td"
       },
       "format": {
-        "itemDate": "YYYY-MM-DD HH:mm:ss"
+        "itemDate": "YYYY-MM-DD"
       }
     },
     {
       "id": "viltrox_16mm_f18z_firmware",
       "title": "Viltrox AF 16mm F1.8 Z Lens Firmware",
       "url": "https://viltrox.com/pages/16mm-f1-8-z",
+      "ruleUpdatedAt": "2026-08-13",
       "selectors": {
         "item": ".download-list-items:first-child,.download-list-items2:nth-child(2)",
+        "itemGroupSize": 2,
         "itemDate": ".version-notes-date",
         "itemTitle": ".download-list-item-title",
         "itemId": ".download-list-item-title"
@@ -81,6 +91,7 @@
       "id": "sirui_aurora_firmware_updates",
       "title": "Sirui Aurora Firmware Update Announcement",
       "url": "https://www.sirui.com/announcementList?type=aurora",
+      "ruleUpdatedAt": "2026-03-31",
       "selectors": {
         "item": ".anno-content-list-box",
         "itemDate": ".anno-content-list-box-date",
