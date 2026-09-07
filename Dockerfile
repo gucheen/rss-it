@@ -1,5 +1,5 @@
 # Keep the build runtime aligned with CI for reproducible compiled output.
-FROM oven/bun:1.4.0-alpine AS base
+FROM oven/bun:1.4.2-alpine AS base
 WORKDIR /usr/src/app
 
 FROM base AS builder
